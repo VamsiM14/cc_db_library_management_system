@@ -3,7 +3,7 @@ from rest_framework import viewsets
 from .models import Book, Author
 from .serializers import BookSerializer, AuthorSerializer
 from django_filters.rest_framework import DjangoFilterBackend
-from .filters import BookFilter
+from .filters import BookFilter, AuthorFilter
 
 # Create your views here.
 class BookViewSet(viewsets.ModelViewSet):
@@ -15,4 +15,6 @@ class BookViewSet(viewsets.ModelViewSet):
 class AuthorViewSet(viewsets.ModelViewSet):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = AuthorFilter
     
