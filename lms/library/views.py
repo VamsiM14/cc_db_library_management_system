@@ -6,6 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .filters import BookFilter, AuthorFilter
 from rest_framework.permissions import IsAuthenticated
 from .permisssions import IsLibrarian
+from rest_framework import generics
 
 # Create your views here.
 class BookViewSet(viewsets.ModelViewSet):
@@ -30,3 +31,12 @@ class AuthorViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = AuthorFilter
     
+
+class AuthorListCreateView(generics.ListCreateAPIView):
+    queryset = Author.objects.all()
+    serializer_class = AuthorSerializer
+
+
+class AuthorRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Author.objects.all()
+    serializer_class = AuthorSerializer
