@@ -5,7 +5,7 @@ from .serializers import BookSerializer, AuthorSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import BookFilter, AuthorFilter
 from rest_framework.permissions import IsAuthenticated
-from .permisssions import IsLibrarian
+from .permissions import IsLibrarian
 from rest_framework import generics
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token

@@ -1,75 +1,113 @@
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
+from django.urls import reverse
 from ..models import Book, Genre, Author
-from . import TestLoader
-# Create your tests here.
-
-class ListAllBooksTestCase(TestLoader):
-    authentication_classes = (TokenAuthentication,)
-    # create a test user
-    # user = User.objects.create_user(
-    #     username='test_user6',
-    #     password='testpassword'
-    # )
-    # token = Token.objects.create(user=user)
-    # print('******'*10)
-    # print(f'token: {token}')
-    # print('******'*10)
-
-    # def setUp(self):
-    #     # create a test user
-    #     # self.user = User.objects.create_user(
-    #     #     username='test_user1',
-    #     #     password='testpassword'
-    #     # )
-    #     # Token.objects.create(user=self.user)
-    #     # create test genres
-    #     self.genre1 = Genre.objects.create(name="genre1")
-    #     self.genre2 = Genre.objects.create(name="genre2")
-
-    #     # create test authors
-    #     self.author1 = Author.objects.create(
-    #         name="Gavin",
-    #         surname="Belson"
-    #     )
-    #     self.author2 = Author.objects.create(
-    #         name="Peter",
-    #         surname="Gregory"
-    #     )
-
-    #     # create some books
-    #     self.book1 = Book.objects.create(
-    #         title="Nucleus: The core of Hooli",
-    #         pages=123,
-    #         release_date='2020-04-03',
-    #         genre=self.genre1
-    #     )
-    #     self.book1.authors.set([self.author1])
-    #     self.book2 = Book.objects.create(
-    #         title="Raviga: Venture Capital with an edge",
-    #         pages=434,
-    #         release_date='2020-02-02',
-    #         genre=self.genre2
-    #     )
-    #     self.book2.authors.set([self.author2])
+from . import TestLoaderUser, TestLoaderLibrarian
 
 
+authentication_classes = (TokenAuthentication,)
+
+
+class ListAllBooksTestCase(TestLoaderUser):
+    
     def test_list_all_books(self):
-        # book list endpoint
-        # token = '89de43fe7c73294f41b20cd3e7a580819be1201c'
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key)
-        response = self.client.get("/api/books/")
-        # print('******'*10)
-        # print(f'response.data: {response.data}')
-        # print('******'*10)
-
+        # book list endpoint
+        response = self.client.get(reverse('book-list'))
+        
         # test if the endpoint returns a response with a status code of 200
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
-        # test if the endpoint returns a list of books
-        # self.assertEqual(type(response.data), list)
-        # print(response.data)
+        # test if the endpoint returns a correct number of books
         self.assertEqual(len(response.data), 2)
+
+
+class ListAllAuthorTestCase(TestLoaderUser):
+
+    def test_list_all_authors(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key)
+        # author list endpoint
+        response = self.client.get(reverse('author-list'))
+
+        # test if the endpoint returns a response with a status code of 200
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # test if the endpoint returns a correct number of books
+        self.assertEqual(len(response.data), 2)
+
+
+class FilterBooksTestCase(TestLoaderUser):
+
+    def test_filter_books(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key)
+        # filter books endpoint
+        response = self.client.get(reverse('book-list') + "?title=Nucleus")
+
+        # test if the endpoint returns a response with a status code of 200
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # test the count of objects given by response
+        self.assertEqual(len(response.data), 1)
+
+        # test if filter works as expected(case-insensitive, exact/partial match)
+        response = self.client.get(reverse('book-list') + "?title=nucleus")
+        self.assertEqual(len(response.data), 1)
+
+        response = self.client.get(reverse('book-list') + "?title=nucl")
+        self.assertEqual(len(response.data), 1)
+
+        # test filters on release_date is working as expected (exact match, earlier/later than and range)
+        response = self.client.get(reverse('book-list') + "?release_date_after=2019-09-18&release_date_before=2020-02-28")
+        self.assertEqual(len(response.data), 1)
+
+        response = self.client.get(reverse('book-list') + "?release_date_after=2019-01-01")
+        self.assertEqual(len(response.data), 2)
+
+        # test if the number of pages filters work as expected (range)
+        response = self.client.get(reverse('book-list') + "?pages_min=200")
+        self.assertEqual(len(response.data), 1)
+
+        response = self.client.get(reverse('book-list') + "?pages_max=200")
+        self.assertEqual(len(response.data), 1)
+
+        response = self.client.get(reverse('book-list') + "?pages_min=10&pages_max=200")
+        self.assertEqual(len(response.data), 1)
+
+        # test filters on book with author_id (exact), by name, surname or both
+        response = self.client.get(reverse('book-list') + "?author=1")
+        self.assertEqual(len(response.data), 1)
+
+        response = self.client.get(reverse('book-list') + "?author_name=Gavin")
+        self.assertEqual(len(response.data), 1)
+
+        response = self.client.get(reverse('book-list') + "?author_surname=Gregory")
+        self.assertEqual(len(response.data), 1)
+
+        response = self.client.get(reverse('book-list') + "?author_name=Gavin&author_surname=Belson")
+        self.assertEqual(len(response.data), 1)
+
+
+class FilterAuthorsTestCase(TestLoaderUser):
+    def test_filter_authors(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key)
+        # test filters on author (case-insensitive, exact & partial match)
+        response = self.client.get(reverse('author-list') + "?name=gavin")
+        self.assertEqual(len(response.data), 1)
+
+
+class LibrarianCRUDTestCase(TestLoaderLibrarian):
+    def test_crud_ops_librarian(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key)
+        
+        # add book
+        book = {
+            'title': 'The Hooli',
+            'pages': 578,
+            'release_date': '2018-01-02',
+            'author_id': 1
+        }
+        response = self.client.post(reverse('book-list'), data=book)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

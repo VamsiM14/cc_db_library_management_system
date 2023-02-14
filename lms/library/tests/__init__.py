@@ -1,11 +1,11 @@
 from rest_framework.test import APITestCase
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from ..models import Book, Genre, Author
 
 
-class TestLoader(APITestCase):
+class TestLoaderUser(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             username='test_user1',
@@ -42,4 +42,18 @@ class TestLoader(APITestCase):
             genre=self.genre2
         )
         self.book2.authors.set([self.author2])
+        super().setUp()
+
+
+class TestLoaderLibrarian(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='test_user_librarian',
+            password='testpassword'
+        )
+        
+        Token.objects.create(user=self.user)
+
+        library_group, created = Group.objects.get_or_create(name='library')
+        library_group.user_set.add(self.user)
         super().setUp()

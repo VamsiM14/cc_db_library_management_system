@@ -21,7 +21,7 @@ class Genre(models.Model):
 
 class Book(models.Model):
     title = models.CharField(max_length=200)
-    pages = models.PositiveIntegerField()
+    pages = models.IntegerField()
     release_date = models.DateField()
     authors = models.ManyToManyField(Author, related_name='books')
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE)

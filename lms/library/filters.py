@@ -3,8 +3,8 @@ from .models import Book, Author
 
 class BookFilter(django_filters.FilterSet):
     title = django_filters.CharFilter(field_name='title', lookup_expr='icontains')
-    pages = django_filters.RangeFilter()
-    release_date = django_filters.DateFilter()
+    pages = django_filters.RangeFilter(field_name='pages')
+    release_date = django_filters.DateFromToRangeFilter()
     author_name = django_filters.CharFilter(field_name='authors__name', lookup_expr='icontains')
     author_surname = django_filters.CharFilter(field_name='authors__surname', lookup_expr='icontains')
     author = django_filters.NumberFilter(field_name='authors__pk')
