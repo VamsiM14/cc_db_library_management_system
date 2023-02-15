@@ -9,6 +9,10 @@ class Author(models.Model):
     faebook_username = models.CharField(max_length=100, blank=True, null=True)
     profile_picture = models.ImageField(upload_to='author_profile_pictures', blank=True, null=True)   
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name', 'surname'], name='unique_author_full_name')
+            ]
     def __str__(self):
         return self.name
 
@@ -20,10 +24,10 @@ class Genre(models.Model):
 
 
 class Book(models.Model):
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200, unique=True)
     pages = models.IntegerField()
     release_date = models.DateField()
-    authors = models.ManyToManyField(Author, related_name='books')
+    authors = models.ManyToManyField(Author, related_name='book_authors')
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
 
     def __str__(self):

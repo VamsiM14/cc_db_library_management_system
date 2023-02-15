@@ -24,7 +24,7 @@ class BookViewSet(viewsets.ModelViewSet):
         Removes Authors who do not have books in the library
         '''
         for author in instance.authors.all():
-            if not author.book_set.exists():
+            if not author.book_authors.exists():
                 author.delete()
         instance.delete()
 
@@ -34,8 +34,12 @@ class AuthorViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = AuthorFilter
 
-
-    
+    def perform_destroy(self, instance):
+        '''
+        Removes an Author only if they don't have any books in library 
+        '''
+        if not instance.book_authors.exists():
+            instance.delete()
 
 class AuthorListCreateView(generics.ListCreateAPIView):
     queryset = Author.objects.all()

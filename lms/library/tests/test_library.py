@@ -98,16 +98,101 @@ class FilterAuthorsTestCase(TestLoaderUser):
         self.assertEqual(len(response.data), 1)
 
 
-class LibrarianCRUDTestCase(TestLoaderLibrarian):
-    def test_crud_ops_librarian(self):
+class LibrarianCRUDBookTestCase(TestLoaderLibrarian):
+    def test_create_book_librarian(self):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key)
         
-        # add book
-        book = {
+        # Create a book
+        url = reverse('book-list')
+        data = {
             'title': 'The Hooli',
             'pages': 578,
             'release_date': '2018-01-02',
-            'author_id': 1
+            'genre': self.genre3.id,
+            'authors': [self.author5.id]
         }
-        response = self.client.post(reverse('book-list'), data=book)
+        response = self.client.post(
+            url,
+            data=data,
+            format='json')
+
+        # print('***'*10)
+        # print(response.data)
+        # print('***'*10)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_update_book_librarian(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key)
+        
+        # test updating an existing book
+        url = reverse('book-list') + f"{self.book7.id}/"
+        data = {
+            'title': 'Updated Zero to One',
+            'pages': 678,
+            'release_date': '2018-01-01',
+            'genre': self.genre3.id,
+            'authors': [self.author6.id]
+        }
+
+        response = self.client.put(
+            url,
+            data=data,
+            format='json')
+        print('###'*10)
+        print(response.data)
+        print('###'*10)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_delete_book_librarian(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key)
+        # test deleting an existing book
+        url = reverse('book-list') + f"{self.book7.id}/"
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+class LibrarianCRUDAuthorTestCase(TestLoaderLibrarian):
+    def test_create_author_librarian(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key)
+        
+        # Create an author
+        url = reverse('author-list')
+        data = {
+            'name': 'Daniel',
+            'surname': 'McGill',
+            'email': 'daniel.mcgill@abc.com'
+        }
+        response = self.client.post(
+            url,
+            data=data,
+            format='json')
+
+        # print('***'*10)
+        # print(response.data)
+        # print('***'*10)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_update_author_librarian(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key)
+        
+        # test updating an existing book
+        url = reverse('author-list') + f"{self.author5.id}/"
+        data = {
+            'name': 'Benn_updated'
+        }
+
+        response = self.client.put(
+            url,
+            data=data,
+            format='json')
+        print('###'*10)
+        print(response.data)
+        print('###'*10)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_delete_author_librarian(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key)
+        # test deleting an existing book
+        url = reverse('author-list') + f"{self.author7.id}/"
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)

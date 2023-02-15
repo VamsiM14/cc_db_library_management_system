@@ -54,6 +54,34 @@ class TestLoaderLibrarian(APITestCase):
         
         Token.objects.create(user=self.user)
 
-        library_group, created = Group.objects.get_or_create(name='library')
-        library_group.user_set.add(self.user)
+        librarian_group, created = Group.objects.get_or_create(name='librarian')
+        librarian_group.user_set.add(self.user)
+
+         # create test genres
+        self.genre3 = Genre.objects.create(name="genre3")
+        self.genre4 = Genre.objects.create(name="genre4")
+
+        # create test authors
+        self.author5 = Author.objects.create(
+            name="Ben",
+            surname="Thomson"
+        )
+        self.author6 = Author.objects.create(
+            name="Nathan",
+            surname="Siguey"
+        )
+        self.author7 = Author.objects.create(
+            name="Peter",
+            surname="Theil"
+        )
+
+        # create a book object
+        self.book7 = Book.objects.create(
+            title="Zero to One by Peter Theil",
+            pages=111,
+            release_date='2015-01-01',
+            genre=self.genre3
+        )
+        self.book7.authors.set([self.author7])
+
         super().setUp()
