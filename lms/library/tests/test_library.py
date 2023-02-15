@@ -185,9 +185,6 @@ class LibrarianCRUDAuthorTestCase(TestLoaderLibrarian):
             url,
             data=data,
             format='json')
-        print('###'*10)
-        print(response.data)
-        print('###'*10)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_delete_author_librarian(self):
